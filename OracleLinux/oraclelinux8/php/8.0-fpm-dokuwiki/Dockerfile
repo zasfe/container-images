@@ -4,19 +4,7 @@
 FROM ghcr.io/oracle/oraclelinux:8
 
 RUN dnf -y module enable php:8.0 && \
-    dnf -y install php-cli \
-                   php-common \
-                   php-fpm \
-                   php-gd \
-                   php-intl \ 
-                   php-json \
-                   php-mbstring \
-                   php-mysqlnd \
-                   php-pdo \
-                   php-pear \
-                   php-process \
-                   php-soap \
-                   php-xml && \
+    dnf -y install dnf -y install php-cli php-common php-fpm php-gd php-intl  php-json php-mbstring php-mysqlnd php-pdo php-pear php-process php-soap php-xml && \
     rm -rf /var/cache/dnf \
     && \
     # Enable external access to PHP-FPM
