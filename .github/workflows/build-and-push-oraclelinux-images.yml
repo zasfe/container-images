@@ -119,6 +119,11 @@ jobs:
           echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
           echo "skip_build=${skip_build}" >> "$GITHUB_OUTPUT"
 
+      - name: echo matrix
+        id: echo_matrix
+        run: |
+          echo "matrix=${matrix}"
+          
       - name: Lowercase repository owner
         id: repository_owner
         run: |
