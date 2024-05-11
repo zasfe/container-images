@@ -22,7 +22,7 @@ on:
       - main
     paths:
       - 'OracleLinux/**'
-      - '.github/workflows/build-and-push-dev-images.yml'
+      - '.github/workflows/build-and-push-oraclelinux-images.yml'
   workflow_dispatch:
     inputs:
       ol:
