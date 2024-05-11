@@ -58,7 +58,7 @@ jobs:
 
       - name: Build matrix
         id: build-matrix
-        working-directory: OracleLinuxDevelopers
+        working-directory: OracleLinux
         run: |
           IFS=", " read -r -a ol_list <<< "${{ github.event.inputs.ol || env.ol}}"
           IFS=", " read -r -a lang_list <<< "${{ github.event.inputs.lang || env.lang}}"
@@ -68,7 +68,7 @@ jobs:
           if [[ -z ${workflow} ]]; then
             # Push event - retrieve list of changed files
             git diff --name-only '${{ github.event.before }}..${{ github.event.after }}' > "${changes}"
-            if grep -q build-and-push-dev-images.yml "${changes}"; then
+            if grep -q build-and-push-oraclelinux-images.yml "${changes}"; then
               echo "PUSH: Action updated, rebuilding all images"
               build_all=1
             else
@@ -159,7 +159,7 @@ jobs:
       - name: Build image - amd64
         uses: docker/build-push-action@v5
         with:
-          context: OracleLinuxDevelopers/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: OracleLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
@@ -170,7 +170,7 @@ jobs:
         uses: docker/build-push-action@v5
         if: matrix.multi
         with:
-          context: OracleLinuxDevelopers/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: OracleLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
