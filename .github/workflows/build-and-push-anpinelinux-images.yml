@@ -1,0 +1,180 @@
+name: Build and publish alpine linux container images to GitHub Container Registry
+
+on:
+  push:
+  # 워크플로 자동 실행 트리거
+    branches:
+      - main
+    paths:
+      - 'AnpineLinux/**'
+      - '.github/workflows/build-and-push-anpinelinux-images.yml'
+  workflow_dispatch:
+    inputs:
+      ol:
+        description: List of ol versions to build
+        default: 'alpine3'
+        required: false
+      lang:
+        description: List of languages to build
+        default: 'init, gcc-toolset, golang, nodejs, nginx, php, python, redis, haproxy'
+        required: false
+
+# Default values for the builds triggered by the push event
+env:
+  ol: 'alpine3'
+  lang: 'init, gcc-toolset, golang, nodejs, nginx, php, python, redis, haproxy'
+
+jobs:
+  prepare:
+    name: Create build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+      skip_build: ${{ steps.build-matrix.outputs.skip_build }}
+      repository_owner: ${{ steps.repository_owner.outputs.repository_owner }}
+      date_stamp: ${{ steps.date_stamp.outputs.date_stamp }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # We need "some" commit history to check for changed files
+          fetch-depth: 32
+
+      - name: Build matrix
+        id: build-matrix
+        working-directory: AlpineLinux
+        run: |
+          IFS=", " read -r -a ol_list <<< "${{ github.event.inputs.ol || env.ol}}"
+          IFS=", " read -r -a lang_list <<< "${{ github.event.inputs.lang || env.lang}}"
+          changes=$(mktemp)
+          # workflow is only set in the workflow_dispatch event payload
+          workflow="${{ github.event.workflow }}"
+          if [[ -z ${workflow} ]]; then
+            # Push event - retrieve list of changed files
+            git diff --name-only '${{ github.event.before }}..${{ github.event.after }}' > "${changes}"
+            if grep -q build-and-push-alpinelinux-images.yml "${changes}"; then
+              echo "PUSH: Action updated, rebuilding all images"
+              build_all=1
+            else
+              echo "PUSH: Rebuilding changed images only"
+              build_all=0
+            fi
+          else
+            echo "MANUAL: Rebuilding based on parameters"
+            build_all=1
+          fi
+          matrix=$(
+            for ol in "${ol_list[@]}"; do
+              pushd "${ol}" >/dev/null || exit 1
+              for lang in "${lang_list[@]}"; do
+                if [[ -d ${lang} ]]; then
+                  pushd "${lang}" >/dev/null || exit 1
+                  for dockerfile in */Dockerfile; do
+                    tag=$(dirname "${dockerfile}")
+                    if [[ -f ${tag}/.skip-arm64 ]]; then
+                      multi=0
+                      arch="linux/amd64"
+                    else
+                      multi=1
+                      arch="linux/amd64,linux/arm64"
+                    fi
+                    if [[ ${build_all} -eq 1 ]] || grep -q "${ol}/${lang}/${tag}" "${changes}"; then
+                      echo "${ol};${lang};${tag};${arch};${multi}"
+                    fi
+                  done
+                  popd >/dev/null || exit 1
+                fi
+              done
+              popd >/dev/null || exit 1
+            done | jq --slurp --raw-input --compact-output '
+              split("\n") |
+              .[:-1] |
+              map(split(";")) |
+              map({"ol": .[0], "lang": .[1], "tag": .[2], "arch": .[3], "multi": (.[4] == "1")})'
+          )
+          rm "${changes}"
+          if [[ ${matrix} == "[]" ]]; then
+            # Empty array -- change didn't impact any image
+            skip_build=true
+          else
+            skip_build=false
+            matrix=$(jq --compact-output '{ "include": .}' <<<"${matrix}")
+          fi
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "skip_build=${skip_build}" >> "$GITHUB_OUTPUT"
+
+      - name: echo matrix
+        id: echo_matrix
+        run: |
+          echo "matrix=${matrix}"
+          
+      - name: Lowercase repository owner
+        id: repository_owner
+        run: |
+          echo "repository_owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Date stamp
+        id: date_stamp
+        run: |
+          echo "date_stamp=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+
+  build-image:
+    name: Build image
+    needs: [ prepare ]
+    if: always() && needs.prepare.outputs.skip_build == 'false'
+    strategy:
+      matrix: ${{fromJson(needs.prepare.outputs.matrix)}}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build image - amd64
+        uses: docker/build-push-action@v5
+        with:
+          context: AnpineLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}${{ matrix.multi && '-amd64' || '' }}"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}${{ matrix.multi && '-amd64' || '' }}"
+
+      - name: Build image - arm64
+        uses: docker/build-push-action@v5
+        if: matrix.multi
+        with:
+          context: AnpineLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
+          platforms: linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-arm64"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-arm64"
+
+      - name: Manifest
+        if: matrix.multi && github.event_name != 'pull_request'
+        run: |
+          docker buildx imagetools create --tag \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}" \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-amd64" \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-arm64"
+          docker buildx imagetools create --tag \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}" \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-amd64" \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-arm64"
