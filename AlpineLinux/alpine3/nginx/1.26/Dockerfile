@@ -62,7 +62,7 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
     clone_git_repo https://github.com/kvspb/nginx-auth-ldap ${NGINX_LDAP_VERSION} && \
     clone_git_repo https://github.com/AirisX/nginx_cookie_flag_module && \
     clone_git_repo https://github.com/google/ngx_brotli ${NGINX_BROTLI_VERSION} && \
-    clone_git_repo https://github.com/leev/ngx_http_geoip2_module ${NGINX_GEOIP2_VERSION} && \
+    clone_git_repo https://github.com/leev/ngx_http_geoip2_module && \
     mkdir -p /usr/src/nginx && \
     curl -sSL http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar xvfz - --strip 1 -C /usr/src/nginx && \
     cd /usr/src/nginx && \
@@ -85,7 +85,7 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
       --add-module=${GIT_REPO_SRC_NGX_BROTLI} \
       --add-module=${GIT_REPO_SRC_NGINX_COOKIE_FLAG_MODULE} \
       --add-module=${GIT_REPO_SRC_HEADERS_MORE_NGINX_MODULE} \
-      --add-module=${GIT_REPO_SRC_NGX_HTTP_GEOIP2_MODULE} \
+      ## --add-module=${GIT_REPO_SRC_NGX_HTTP_GEOIP2_MODULE} \
       ## GCC 11.2 fix https://github.com/google/ngx_brotli/issues/124
       --with-cc-opt='-Wno-vla-parameter' \
       --with-compat \
