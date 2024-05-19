@@ -6,8 +6,8 @@ on:
     branches:
       - main
     paths:
-      - 'AnpineLinux/**'
-      - '.github/workflows/build-and-push-anpinelinux-images.yml'
+      - 'AlpineLinux/**'
+      - '.github/workflows/build-and-push-alpinelinux-images.yml'
   workflow_dispatch:
     inputs:
       ol:
@@ -149,7 +149,7 @@ jobs:
       - name: Build image - amd64
         uses: docker/build-push-action@v5
         with:
-          context: AnpineLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: AlpineLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
@@ -160,7 +160,7 @@ jobs:
         uses: docker/build-push-action@v5
         if: matrix.multi
         with:
-          context: AnpineLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: AlpineLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
