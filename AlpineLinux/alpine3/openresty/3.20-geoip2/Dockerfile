@@ -1,6 +1,6 @@
 FROM openresty/openresty:alpine
 
-RUN apk add --no-cache git build-base pcre-dev openssl-dev zlib-dev linux-headers perl \
+RUN apk add --no-cache git build-base pcre-dev openssl-dev zlib-dev linux-headers perl libmaxminddb \
     && cd /tmp \
     && git clone https://github.com/leev/ngx_http_geoip2_module.git \
     && cd ngx_http_geoip2_module \
