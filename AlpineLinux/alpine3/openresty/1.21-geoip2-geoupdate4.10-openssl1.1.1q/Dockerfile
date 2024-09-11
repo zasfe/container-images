@@ -212,6 +212,7 @@ ADD https://raw.githubusercontent.com/openresty/docker-openresty/master/nginx.co
 ADD https://raw.githubusercontent.com/openresty/docker-openresty/master/nginx.vh.default.conf /etc/nginx/conf.d/default.conf
 ADD nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 ADD geoip.conf /usr/local/openresty/nginx/conf/geoip/geoip.conf
+ADD geoip.conf /usr/local/openresty/nginx/conf/geoip/geoipupdate.conf
 
 CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 
