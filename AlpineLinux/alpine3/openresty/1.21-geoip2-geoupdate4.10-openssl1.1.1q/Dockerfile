@@ -201,7 +201,8 @@ RUN apk add --no-cache --virtual .build-deps \
     && apk del .build-deps \
     && mkdir -p /var/run/openresty \
     && ln -sf /dev/stdout /usr/local/openresty/nginx/logs/access.log \
-    && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log
+    && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log \
+    && mkdir -p /usr/local/openresty/nginx/conf/geoip 
 
 # Add additional binaries into PATH for convenience
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
@@ -210,7 +211,7 @@ ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/
 ADD https://raw.githubusercontent.com/openresty/docker-openresty/master/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf.default
 ADD https://raw.githubusercontent.com/openresty/docker-openresty/master/nginx.vh.default.conf /etc/nginx/conf.d/default.conf
 ADD nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
-ADD geoip.conf /usr/local/openresty/nginx/conf/geoip.conf
+ADD geoip.conf /usr/local/openresty/nginx/conf/geoip/geoip.conf
 
 CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 
