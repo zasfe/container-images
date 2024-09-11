@@ -207,8 +207,10 @@ RUN apk add --no-cache --virtual .build-deps \
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
 
 # Copy nginx configuration files
-ADD https://raw.githubusercontent.com/openresty/docker-openresty/master/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+ADD https://raw.githubusercontent.com/openresty/docker-openresty/master/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf.default
 ADD https://raw.githubusercontent.com/openresty/docker-openresty/master/nginx.vh.default.conf /etc/nginx/conf.d/default.conf
+ADD nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+ADD geoip.conf /usr/local/openresty/nginx/conf/geoip.conf
 
 CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 
