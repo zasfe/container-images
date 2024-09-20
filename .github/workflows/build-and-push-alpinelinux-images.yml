@@ -10,8 +10,8 @@ on:
       - '.github/workflows/build-and-push-alpinelinux-images.yml'
   workflow_dispatch:
     inputs:
-      ol:
-        description: List of ol versions to build
+      os:
+        description: List of os versions to build
         default: 'alpine3'
         required: false
       lang:
@@ -21,7 +21,7 @@ on:
 
 # Default values for the builds triggered by the push event
 env:
-  ol: 'alpine3'
+  os: 'alpine3'
   lang: 'init, gcc-toolset, golang, nodejs, nginx, php, python, redis, haproxy, openresty'
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
         id: build-matrix
         working-directory: AlpineLinux
         run: |
-          IFS=", " read -r -a ol_list <<< "${{ github.event.inputs.ol || env.ol}}"
+          IFS=", " read -r -a os_list <<< "${{ github.event.inputs.os || env.os}}"
           IFS=", " read -r -a lang_list <<< "${{ github.event.inputs.lang || env.lang}}"
           changes=$(mktemp)
           # workflow is only set in the workflow_dispatch event payload
@@ -65,8 +65,8 @@ jobs:
             build_all=1
           fi
           matrix=$(
-            for ol in "${ol_list[@]}"; do
-              pushd "${ol}" >/dev/null || exit 1
+            for os in "${os_list[@]}"; do
+              pushd "${os}" >/dev/null || exit 1
               for lang in "${lang_list[@]}"; do
                 if [[ -d ${lang} ]]; then
                   pushd "${lang}" >/dev/null || exit 1
@@ -79,8 +79,8 @@ jobs:
                       multi=1
                       arch="linux/amd64,linux/arm64"
                     fi
-                    if [[ ${build_all} -eq 1 ]] || grep -q "${ol}/${lang}/${tag}" "${changes}"; then
-                      echo "${ol};${lang};${tag};${arch};${multi}"
+                    if [[ ${build_all} -eq 1 ]] || grep -q "${os}/${lang}/${tag}" "${changes}"; then
+                      echo "${os};${lang};${tag};${arch};${multi}"
                     fi
                   done
                   popd >/dev/null || exit 1
@@ -91,7 +91,7 @@ jobs:
               split("\n") |
               .[:-1] |
               map(split(";")) |
-              map({"ol": .[0], "lang": .[1], "tag": .[2], "arch": .[3], "multi": (.[4] == "1")})'
+              map({"os": .[0], "lang": .[1], "tag": .[2], "arch": .[3], "multi": (.[4] == "1")})'
           )
           rm "${changes}"
           if [[ ${matrix} == "[]" ]]; then
@@ -149,32 +149,32 @@ jobs:
       - name: Build image - amd64
         uses: docker/build-push-action@v5
         with:
-          context: AlpineLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: AlpineLinux/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}${{ matrix.multi && '-amd64' || '' }}"
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}${{ matrix.multi && '-amd64' || '' }}"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}${{ matrix.multi && '-amd64' || '' }}"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}${{ matrix.multi && '-amd64' || '' }}"
 
       - name: Build image - arm64
         uses: docker/build-push-action@v5
         if: matrix.multi
         with:
-          context: AlpineLinux/${{ matrix.ol }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: AlpineLinux/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-arm64"
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-arm64"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-arm64"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-arm64"
 
       - name: Manifest
         if: matrix.multi && github.event_name != 'pull_request'
         run: |
           docker buildx imagetools create --tag \
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}" \
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-amd64" \
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-arm64"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}" \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-amd64" \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-arm64"
           docker buildx imagetools create --tag \
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}" \
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-amd64" \
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.ol }}-${{ matrix.lang }}:${{ matrix.tag }}-arm64"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}" \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-amd64" \
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-arm64"
