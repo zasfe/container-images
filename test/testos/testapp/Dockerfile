@@ -58,11 +58,6 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
     \
     mkdir -p /www /var/log/nginx && \
     chown -R ${NGINX_USER}:${NGINX_GROUP} /var/log/nginx && \
-    clone_git_repo https://github.com/openresty/headers-more-nginx-module && \
-    clone_git_repo https://github.com/kvspb/nginx-auth-ldap ${NGINX_LDAP_VERSION} && \
-    clone_git_repo https://github.com/AirisX/nginx_cookie_flag_module && \
-    clone_git_repo https://github.com/google/ngx_brotli ${NGINX_BROTLI_VERSION} && \
-    clone_git_repo https://github.com/leev/ngx_http_geoip2_module && \
     mkdir -p /usr/src/nginx && \
     curl -sSL http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar xvfz - --strip 1 -C /usr/src/nginx && \
     cd /usr/src/nginx && \
@@ -74,18 +69,8 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
       --http-log-path=/dev/null \
       --pid-path=/var/run/nginx.pid \
       --lock-path=/var/run/nginx.lock \
-      --http-client-body-temp-path=/var/cache/nginx/client_temp \
-      --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
-      --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
-      --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
-      --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
       --user=${NGINX_USER} \
       --group=${NGINX_GROUP} \
-      --add-module=${GIT_REPO_SRC_NGINX_AUTH_LDAP} \
-      --add-module=${GIT_REPO_SRC_NGX_BROTLI} \
-      --add-module=${GIT_REPO_SRC_NGINX_COOKIE_FLAG_MODULE} \
-      --add-module=${GIT_REPO_SRC_HEADERS_MORE_NGINX_MODULE} \
-      ## --add-module=${GIT_REPO_SRC_NGX_HTTP_GEOIP2_MODULE} \
       ## GCC 11.2 fix https://github.com/google/ngx_brotli/issues/124
       --with-cc-opt='-Wno-vla-parameter' \
       --with-compat \
@@ -112,7 +97,6 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
       --with-mail \
       --with-mail_ssl_module \
       --with-stream \
-      --with-stream_geoip_module=dynamic \
       --with-stream_realip_module \
       --with-stream_ssl_module \
       --with-stream_ssl_preread_module \
@@ -180,5 +164,3 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
             /var/tmp/*
 
 EXPOSE 80
-
-COPY install /
