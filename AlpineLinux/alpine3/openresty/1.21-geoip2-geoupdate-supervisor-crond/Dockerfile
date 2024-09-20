@@ -1,7 +1,8 @@
-FROM alpine-openresty-geoip
+FROM zasfe/alpine3-openresty:1.21-geoip2-geoupdate4.10-openssl1.1.1q-amd64
 
 # install supervisor
-RUN apk update && apk add --no-cache supervisor bash
+RUN apk update && apk add --no-cache supervisor bash \
+    && rm -rf /var/cache/apk/*
 
 # copy files from current dir to folder in container
 COPY ./conf/nginx.conf /etc/nginx/conf.d/
@@ -9,12 +10,6 @@ COPY ./favicon.ico /usr/local/openresty/nginx/html/
 COPY ./conf/geoip.conf /opt/geoip.conf
 COPY ./conf/crontab.txt /opt/crontab.txt
 COPY ./conf/supervisord.conf /opt/
-
-COPY ./gabia_ssl.crt /usr/local/share/ca-certificates/gabia_ssl.crt
-RUN cat /usr/local/share/ca-certificates/gabia_ssl.crt >> /etc/ssl/certs/ca-certificates.crt
-RUN apk --no-cache add ca-certificates \
-    && rm -rf /var/cache/apk/* \
-    && update-ca-certificates
 
 # Remove default nginx conf
 RUN rm -f /etc/nginx/conf.d/default.conf
