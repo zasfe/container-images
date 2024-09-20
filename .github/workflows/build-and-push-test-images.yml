@@ -16,13 +16,13 @@ on:
         required: false
       lang:
         description: List of languages to build
-        default: 'nginx'
+        default: 'testapp'
         required: false
 
 # Default values for the builds triggered by the push event
 env:
   os: 'testos'
-  lang: 'nginx'
+  lang: 'testapp'
 
 jobs:
   prepare:
