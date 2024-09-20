@@ -10,6 +10,10 @@ on:
       - '.github/workflows/build-and-push-alpinelinux-images.yml'
   workflow_dispatch:
     inputs:
+      osname:
+        description: List of os name to build
+        default: 'AlpineLinux'
+        required: false
       os:
         description: List of os versions to build
         default: 'alpine3'
@@ -21,6 +25,7 @@ on:
 
 # Default values for the builds triggered by the push event
 env:
+  osname: 'AlpineLinux'
   os: 'alpine3'
   lang: 'init, gcc-toolset, golang, nodejs, nginx, php, python, redis, haproxy, openresty'
 
@@ -43,7 +48,7 @@ jobs:
 
       - name: Build matrix
         id: build-matrix
-        working-directory: AlpineLinux
+        working-directory: ${{ env.osname }}
         run: |
           IFS=", " read -r -a os_list <<< "${{ github.event.inputs.os || env.os}}"
           IFS=", " read -r -a lang_list <<< "${{ github.event.inputs.lang || env.lang}}"
@@ -168,7 +173,7 @@ jobs:
         uses: docker/build-push-action@v5
         if: matrix.multi
         with:
-          context: AlpineLinux/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: ${{ env.osname }}/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
