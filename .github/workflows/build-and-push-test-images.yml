@@ -10,6 +10,10 @@ on:
       - '.github/workflows/build-and-push-test-images.yml'
   workflow_dispatch:
     inputs:
+      osname:
+        description: List of os name to build
+        default: 'test'
+        required: false
       os:
         description: List of os versions to build
         default: 'testos'
@@ -23,6 +27,7 @@ on:
 env:
   os: 'testos'
   lang: 'testapp'
+  osname: 'test'
 
 jobs:
   prepare:
@@ -43,7 +48,7 @@ jobs:
 
       - name: Build matrix
         id: build-matrix
-        working-directory: test
+        working-directory: ${{ env.osname }}
         run: |
           IFS=", " read -r -a os_list <<< "${{ github.event.inputs.os || env.os}}"
           IFS=", " read -r -a lang_list <<< "${{ github.event.inputs.lang || env.lang}}"
@@ -155,7 +160,7 @@ jobs:
       - name: Build image - amd64
         uses: docker/build-push-action@v5
         with:
-          context: test/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: ${{ env.osname }}/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
