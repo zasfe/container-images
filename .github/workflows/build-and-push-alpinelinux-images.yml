@@ -160,7 +160,7 @@ jobs:
       - name: Build image - amd64
         uses: docker/build-push-action@v5
         with:
-          context: AlpineLinux/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: ${{ env.osname }}/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
