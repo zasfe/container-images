@@ -173,7 +173,7 @@ jobs:
         uses: docker/build-push-action@v5
         if: matrix.multi
         with:
-          context: AlpineLinux/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
+          context: ${{ env.osname }}/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
           platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
