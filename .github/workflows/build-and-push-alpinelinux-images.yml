@@ -164,10 +164,14 @@ jobs:
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}${{ matrix.multi && '-amd64' || '' }}"
-            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}${{ matrix.multi && '-amd64' || '' }}"
-            "${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}${{ matrix.multi && '-amd64' || '' }}"
-            "${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}${{ matrix.multi && '-amd64' || '' }}"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-amd64"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}"
+            "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-amd64"
+            "${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}"
+            "${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}-amd64"
+            "${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}"
+            "${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-amd64"
             
       - name: Build image - arm64
         uses: docker/build-push-action@v5
