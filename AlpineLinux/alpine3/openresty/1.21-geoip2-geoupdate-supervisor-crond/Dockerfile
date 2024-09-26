@@ -1,4 +1,4 @@
-FROM zasfe/alpine3-openresty:1.21-geoip2-geoupdate4.10-openssl1.1.1q-amd64
+FROM zasfe/alpine3-openresty:1.21-geoip2-geoupdate4.10-openssl1.1.1q
 
 # install supervisor
 RUN apk update && apk add --no-cache supervisor bash \
