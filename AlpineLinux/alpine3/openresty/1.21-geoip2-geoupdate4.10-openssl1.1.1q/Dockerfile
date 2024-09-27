@@ -219,6 +219,7 @@ CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 STOPSIGNAL SIGQUIT
 
 
+
 #######
 # add ngx_http_geoip2_module to nginx config
 #######
