@@ -101,6 +101,7 @@ jobs:
           rm "${changes}"
           if [[ ${matrix} == "[]" ]]; then
             # Empty array -- change didn't impact any image
+            echo "# Empty array -- change didn't impact any image"
             skip_build=true
           else
             skip_build=false
