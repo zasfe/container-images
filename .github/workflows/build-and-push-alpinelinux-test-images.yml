@@ -22,12 +22,17 @@ on:
         description: List of languages to build
         default: 'init'
         required: false
+      workflowfile:
+        description: workflow file name
+        default: 'build-and-push-alpinelinux-test-images.yml'
+        required: true
 
 # Default values for the builds triggered by the push event
 env:
   osname: 'AlpineLinux'
   os: 'alpine3'
   lang: 'init'
+  workflowfile: 'build-and-push-alpinelinux-test-images.yml'
 
 jobs:
   prepare:
@@ -58,7 +63,7 @@ jobs:
           if [[ -z ${workflow} ]]; then
             # Push event - retrieve list of changed files
             git diff --name-only '${{ github.event.before }}..${{ github.event.after }}' > "${changes}"
-            if grep -q build-and-push-alpinelinux-images.yml "${changes}"; then
+            if grep -q ${{ env.workflowfile }} "${changes}"; then
               echo "PUSH: Action updated, rebuilding all images"
               build_all=1
             else
