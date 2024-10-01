@@ -27,7 +27,7 @@ on:
 env:
   osname: 'AlpineLinux'
   os: 'alpine3'
-  lang: 'init, gcc-toolset, golang, nodejs, nginx, php, python, redis, haproxy, openresty'
+  lang: 'init'
 
 jobs:
   prepare:
