@@ -196,3 +196,13 @@ jobs:
             "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}" \
             "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-amd64" \
             "ghcr.io/${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-arm64"
+
+      - name: Build image - amd64, arm64 to docker.hub
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.osname }}/${{ matrix.os }}/${{ matrix.lang }}/${{ matrix.tag }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            "${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}-${{ needs.prepare.outputs.date_stamp }}"
+            "${{ needs.prepare.outputs.repository_owner }}/${{ matrix.os }}-${{ matrix.lang }}:${{ matrix.tag }}"
