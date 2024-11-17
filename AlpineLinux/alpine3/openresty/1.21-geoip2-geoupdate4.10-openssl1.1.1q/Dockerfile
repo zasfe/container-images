@@ -13,7 +13,7 @@ RUN cd geoipupdate-$GEOIPUPDATE_VERSION && \
 FROM alpine:3.16
 
 WORKDIR /opt/
-RUN apk update && apk add --no-cache --virtual .run-deps wget tar bash curl 
+RUN apk update && apk add --no-cache wget tar bash curl 
     
 #################
 # geoipupdate
