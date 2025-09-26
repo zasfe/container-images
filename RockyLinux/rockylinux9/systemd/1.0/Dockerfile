@@ -1,12 +1,12 @@
 FROM rockylinux:9
 
-LABEL maintainer="Robert de Bock <robert@meinit.nl>"
-LABEL build_date="2023-10-03"
-
 ENV container=docker
 
-RUN cd /lib/systemd/system/sysinit.target.wants/ ; \
-    for i in * ; do [ $i = systemd-tmpfiles-setup.service ] || rm -f $i ; done ; \
+RUN [ ! -f /usr/sbin/init ] && dnf -y update && dnf -y install systemd && dnf clean all
+
+RUN ([ -d /lib/systemd/system/sysinit.target.wants ] && \
+        cd /lib/systemd/system/sysinit.target.wants/ && \
+        for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
     rm -f /lib/systemd/system/multi-user.target.wants/* ; \
     rm -f /etc/systemd/system/*.wants/* ; \
     rm -f /lib/systemd/system/local-fs.target.wants/* ; \
@@ -17,4 +17,4 @@ RUN cd /lib/systemd/system/sysinit.target.wants/ ; \
 
 VOLUME ["/sys/fs/cgroup"]
 
-CMD ["/sbin/init"]
+CMD ["/usr/sbin/init"]
