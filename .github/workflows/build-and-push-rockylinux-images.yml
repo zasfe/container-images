@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - 'RockyLinux/**'
-      - '.github/workflows/build-and-push-rockylinux-images.yml'
+      - '.github/workflows/build-and-push-rockylinux-images.yml''
   workflow_dispatch:
     inputs:
       osname:
@@ -30,8 +30,8 @@ on:
 # Default values for the builds triggered by the push event
 env:
   osname: 'RockyLinux'
-  os: 'alpine3'
-  lang: 'init'
+  os: 'rockylinux9'
+  lang: 'systemd'
   workflowfile: 'build-and-push-rockylinux-images.yml'
 
 jobs:
