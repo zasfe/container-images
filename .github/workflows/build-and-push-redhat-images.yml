@@ -20,7 +20,7 @@ on:
         required: false
       lang:
         description: List of languages to build
-        default: 'systemd'
+        default: 'systemd,8.6-systemd'
         required: false
       workflowfile:
         description: workflow file name
