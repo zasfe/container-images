@@ -30,7 +30,7 @@ on:
 # Default values for the builds triggered by the push event
 env:
   osname: 'Ubuntu'
-  os: 'ubuntu'
+  os: '22.04_Jammy,24.04_Noble'
   lang: 'systemd'
   workflowfile: 'build-and-push-ubuntu-images.yml'
 
