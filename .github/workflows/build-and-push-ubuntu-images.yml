@@ -16,7 +16,7 @@ on:
         required: false
       os:
         description: List of os versions to build
-        default: '22.04_jammy,24.04_noble'
+        default: '22.04_jammy, 24.04_noble'
         required: false
       lang:
         description: List of languages to build
@@ -30,7 +30,7 @@ on:
 # Default values for the builds triggered by the push event
 env:
   osname: 'Ubuntu'
-  os: '22.04_jammy,24.04_noble'
+  os: '22.04_jammy, 24.04_noble'
   lang: 'systemd'
   workflowfile: 'build-and-push-ubuntu-images.yml'
 
