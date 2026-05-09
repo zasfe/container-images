@@ -16,7 +16,7 @@ on:
         required: false
       os:
         description: List of os versions to build
-        default: 'ubuntu'
+        default: '22.04_Jammy,24.04_Noble'
         required: false
       lang:
         description: List of languages to build
